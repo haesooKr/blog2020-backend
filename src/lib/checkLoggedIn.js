@@ -3,5 +3,7 @@ const checkLoggedIn = (ctx, next) => {
     ctx.status = 401;
     return;
   }
-  next();
+  return next();
 }
+
+export default checkLoggedIn;

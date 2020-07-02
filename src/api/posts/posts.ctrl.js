@@ -4,11 +4,22 @@ import Joi from '@hapi/joi';
 
 const { ObjectId } = mongoose.Types;
 
-export const checkObjectId = (ctx, next) => {
+export const getPostById = async (ctx, next) => {
   const { id } = ctx.params;
   if (!ObjectId.isValid(id)) {
     ctx.status = 400;
     return;
+  }
+  try {
+    const post = await Post.findById(id);
+    if (!post) {
+      ctx.status = 404;
+      return;
+    }
+    ctx.status.post = post;
+    return next();
+  } catch (e) {
+    ctx.throw(500, e);
   }
   return next();
 };
@@ -32,11 +43,14 @@ export const write = async (ctx) => {
     title,
     body,
     tags,
+    user: ctx.state.user,
   });
   try {
     await post.save();
     ctx.body = post;
+    console.log(post);
   } catch (e) {
+    console.log(e);
     ctx.throw(500, e);
   }
 };
