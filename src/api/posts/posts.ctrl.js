@@ -4,6 +4,15 @@ import Joi from '@hapi/joi';
 
 const { ObjectId } = mongoose.Types;
 
+export const checkOwnPost = (ctx, next) => {
+  const { user, post } = ctx.state;
+  if (post.user._id.toString() !== user.id) {
+    ctx.status = 403;
+    return;
+  }
+  return next();
+};
+
 export const getPostById = async (ctx, next) => {
   const { id } = ctx.params;
   if (!ObjectId.isValid(id)) {
@@ -16,7 +25,7 @@ export const getPostById = async (ctx, next) => {
       ctx.status = 404;
       return;
     }
-    ctx.status.post = post;
+    ctx.state.post = post;
     return next();
   } catch (e) {
     ctx.throw(500, e);
@@ -82,18 +91,8 @@ export const list = async (ctx) => {
   }
 };
 
-export const read = async (ctx) => {
-  const { id } = ctx.params;
-  try {
-    const post = await Post.findById(id).exec();
-    if (!post) {
-      ctx.status = 404;
-      return;
-    }
-    ctx.body = post;
-  } catch (e) {
-    ctx.throw(500, e);
-  }
+export const read = (ctx) => {
+  ctx.body = ctx.state.post;
 };
 
 export const remove = async (ctx) => {
