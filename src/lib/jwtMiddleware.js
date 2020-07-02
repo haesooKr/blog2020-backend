@@ -1,0 +1,19 @@
+import jwt from 'jsonwebtoken';
+
+const jwtMiddleware = (ctx, next) => {
+  console.log('jwt 미들웨어 실행');
+  const token = ctx.cookies.get('access_token');
+  if (!token) return next();
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    ctx.state.user = {
+      _id: decoded._id,
+      username: decoded.username,
+    };
+    return next();
+  } catch (e) {
+    return next();
+  }
+};
+
+export default jwtMiddleware;
